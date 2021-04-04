@@ -93,7 +93,7 @@ def create_game():
         ngame = game.Game()
         ngame.admin = current_user.id
         ngame.title = form.title.data
-        arr = [str(i) for i in range(len(db_sess.query(question.Question).all()))]
+        arr = [str(i) for i in range(1, len(db_sess.query(question.Question).all()) + 1)]
         random.shuffle(arr)
         ngame.questions_id = ";".join(arr[:int(form.num_questions.data)])
         ngame.key = ''.join(str(random.randint(1, 150)) for i in range(10))
@@ -134,6 +134,7 @@ def newgame():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         current_game = db_sess.query(game.Game).filter(game.Game.key == key).first()
+        print(current_game.questions_id)
         pos = int(request.cookies.get("pos", 0))
         try:
             qust_id = current_game.questions_id.split(';')[pos]
@@ -142,7 +143,7 @@ def newgame():
             res.set_cookie("pos", str(pos + 1),
                            max_age=60 * 60 * 24)
             if form.answer.data.lower() == qust.answer.lower():
-                res.set_cookie('score', str(int(request.cookies.get("score", 0)) + 1), max_age=60 * 60 * 24)
+                res.set_cookie('score', str(int(request.cookies.get("score", 0))), max_age=60 * 60 * 24)
             return res
         except IndexError:
             return redirect('/')
@@ -158,9 +159,9 @@ def newgame():
             return res
         except IndexError:
             res = make_response(redirect('/'))
-            res.set_cookie('score', 1, max_age=0)
-            res.set_cookie('pos', 1, max_age=0)
-            res.set_cookie('game_key', 1, max_age=0)
+            res.set_cookie('score', '', max_age=0)
+            res.set_cookie('pos', '', max_age=0)
+            res.set_cookie('game_key', '', max_age=0)
             return res
     else:
         return redirect("/create_game")
