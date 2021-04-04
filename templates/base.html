@@ -8,16 +8,59 @@
         <title>{{ title }}}</title>
     </head>
     <body>
-        {% if current_user.is_authenticated %}
-            <a class="navbar-brand" href="/">{{ current_user.name }}</a>
-            <a class="btn btn-primary " href="/create_question">Создать Вопрос</a>
-            <a class="btn btn-primary " href="/create_game">Создать Игру</a>
-            <a class="btn btn-primary " href="/choice_game">Войти в Игру</a>
-        {% else %}
-            <p>
-                <a class="btn btn-primary " href="/reg">Зарегистрироваться</a>
-                <a class="btn btn-success" href="/login">Войти</a>
-            </p>
-        {% endif %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="#">3W</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/login">{{ current_user.name }}</a>
+                    </li>
+                  {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Авторизация</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reg">Регистрация</a>
+                    </li>
+                  {% endif %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="/create_question">Создать вопрос</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/create_game">Создать игру</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/choice_game.html">Войти в игру</a>
+                    </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+          <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              <div class="carousel-item active">
+                <img src="{{ url_for('static', filename='img/base/carusel_1.jpg') }}" class="d-block w-100" alt="картинка 1">
+              </div>
+              <div class="carousel-item">
+                <img src="{{ url_for('static', filename='img/base/carusel_2.jpg') }}" class="d-block w-100" alt="картинка 3">
+              </div>
+              <div class="carousel-item">
+                <img src="{{ url_for('static', filename='img/base/carusel_3.jpg') }}" class="d-block w-100" alt="картинка 2">
+              </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          </div>
     </body>
 </html>

@@ -1,6 +1,6 @@
 import random
 
-from flask import Flask, render_template, redirect, make_response, request, sessions
+from flask import Flask, render_template, redirect, make_response, request, sessions, url_for
 from flask_login import login_user, current_user, LoginManager
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, BooleanField, SubmitField, StringField, IntegerField, FieldList
@@ -23,7 +23,7 @@ def load_user(user_id):
     return db_sess.query(users.User).get(user_id)
 
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def index():
     return render_template("base.html", title="Главная Страница")
 
