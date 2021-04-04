@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet"
+                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                    integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                    crossorigin="anonymous">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <p class="h1">Миссия Колонизация Марса</p>
+    <p class="h4">И на Марсе будут яблони цвести!</p>
+ {% if "инженер" in prof or "строитель" in prof %}
+        <div>
+            <p class="h5" >Инженерные тренажеры</p>
+            <img src="/static/img/ingener.jpg">
+        </div>
+ {% else %}
+       <div>
+           <p class="h5">Научные симуляторы</p>
+           <img src="/static/img/siense.jpg">
+       </div>
+ {% endif %}
+</body>
+</html>
