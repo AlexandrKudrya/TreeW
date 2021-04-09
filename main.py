@@ -1,6 +1,6 @@
 import random
 
-from flask import Flask, render_template, redirect, make_response
+from flask import Flask, render_template, redirect, make_response, request, sessions, url_for
 from flask_login import login_user, current_user, LoginManager
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, BooleanField, SubmitField, StringField, IntegerField, FieldList
@@ -23,7 +23,7 @@ def load_user(user_id):
     return db_sess.query(users.User).get(user_id)
 
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def index():
     return render_template("base.html", title="Главная Страница")
 
@@ -93,23 +93,84 @@ def create_game():
         ngame = game.Game()
         ngame.admin = current_user.id
         ngame.title = form.title.data
-        ngame.questions_id = ";".join([str(random.randint(1, len(db_sess.query(question.Question).all())))
-                                          for i in range(form.num_questions.data)])
-        ngame.key = ''.join(str(random.randint(1, 150)) for i in range(10))
+        arr = [str(i) for i in range(1, len(db_sess.query(question.Question).all()) + 1)]
+        random.shuffle(arr)
+        ngame.questions_id = ";".join(arr[:int(form.num_questions.data)])
+        ngame.key = str(len(list(db_sess.query(game.Game))) + 1)
         db_sess.add(ngame)
 
         db_sess.commit()
-        res = make_response(render_template("start_game.html", title="Главная Страница"))
-        res.set_cookie("visits_count", ngame.key,
+        res = make_response(render_template("start_game.html", title="Главная Страница", key=ngame.key))
+        res.set_cookie("game_key", ngame.key,
                        max_age=60 * 60 * 24)
+        res.set_cookie("pos", '0',
+                       max_age=60 * 60 * 24)
+        res.set_cookie("score", '0',
+                       max_age=60 * 60 * 24)
+        file = open(f'games_logs/{datetime.datetime.now().strftime("%m %d %y")}/{ngame.key}.txt', mode="w")
+        file.write(f'{datetime.datetime.now().strftime("%m %d %y")}/{ngame.key}' + "\n\n\n")
+        file.close()
         return res
     return render_template('create_game.html', title='Создание комнаты', form=form)
 
 
-@app.route('/game', methods=['GET', 'POST'])
-def create_game():
 
-    return render_template('create_game.html', title='Создание комнаты', form=form)
+@app.route('/choice_game', methods=['GET', 'POST'])
+def choice_game():
+    form = ChoiceForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        current_game = db_sess.query(game.Game).filter(game.Game.key == form.key.data).first()
+        if current_game:
+            res = make_response(redirect('/newgame'))
+            res.set_cookie("pos", str(1),
+                           max_age=60 * 60 * 24)
+            res.set_cookie('game_key', form.key.data, max_age=60*60*24)
+            return res
+    return render_template('choice_game.html', title='Создание комнаты', form=form)
+
+
+@app.route('/newgame', methods=['GET', 'POST'])
+def newgame():
+    form = AnswerForm()
+    key = str(request.cookies.get("game_key", ''))
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        current_game = db_sess.query(game.Game).filter(game.Game.key == key).first()
+        pos = int(request.cookies.get("pos", 0))
+        try:
+            qust_id = current_game.questions_id.split(';')[pos]
+            qust = db_sess.query(question.Question).filter(question.Question.id == qust_id).first()
+            res = make_response(render_template('game.html', title='Создание комнаты', qust=qust, form=form))
+            res.set_cookie("pos", str(pos + 1),
+                           max_age=60 * 60 * 24)
+            print(form.answer.data.lower(), qust.answer.lower(), qust.question)
+            if form.answer.data.lower() == qust.answer.lower().replace('.', ''):
+                res.set_cookie('score', str(int(request.cookies.get("score", 0))), max_age=60 * 60 * 24)
+            with open(f'games_logs/{datetime.datetime.now().strftime("%m %d %y")}/{current_game.key}.txt', mode="a", encoding="utf-8") as file:
+                file.write(current_user.name + "::" + form.answer.data.lower() + "::" + qust.answer.lower()
+                           + "::" + qust.question + "\n\n\n")
+            return res
+        except IndexError:
+            return redirect('/')
+    elif len(key) > 0:
+        db_sess = db_session.create_session()
+        current_game = db_sess.query(game.Game).filter(game.Game.key == key).first()
+        pos = int(request.cookies.get("pos", 0))
+        try:
+            qust_id = int(current_game.questions_id.split(';')[pos])
+            qust = db_sess.query(question.Question).filter(question.Question.id == qust_id).first()
+            print(qust)
+            res = make_response(render_template('game.html', title='Создание комнаты', qust=qust, form=form))
+            return res
+        except IndexError:
+            res = make_response(redirect('/'))
+            res.set_cookie('score', '-1', max_age=0)
+            res.set_cookie('pos', '-1', max_age=0)
+            res.set_cookie('game_key', '-1', max_age=0)
+            return res
+    else:
+        return redirect("/create_game")
 
 
 class LoginForm(FlaskForm):
@@ -139,6 +200,16 @@ class GameForm(FlaskForm):
     num_questions = IntegerField('Количество Вопросов', validators=[DataRequired()])
     is_private = BooleanField('Приватный?')
     create = SubmitField('Создать')
+
+
+class AnswerForm(FlaskForm):
+    answer = StringField('Ответ', validators=[DataRequired()])
+    create = SubmitField('Подтвердить')
+
+
+class ChoiceForm(FlaskForm):
+    key = StringField('Ключ Игры', validators=[DataRequired()])
+    create = SubmitField('Подтвердить')
 
 
 if __name__ == '__main__':

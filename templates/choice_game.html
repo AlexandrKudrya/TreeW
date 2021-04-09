@@ -17,30 +17,19 @@
             </p>
         {% endif %}
         {% block content %}
-            <h1>Создать Игру</h1>
+            <h1>Авторизация</h1>
             <form action="" method="post">
                 {{ form.hidden_tag() }}
                 <p style="width: 25%">
-                    {{ form.title.label }}<br>
-                    {{ form.title(class="form-control") }}<br>
-                    {% for error in form.title.errors %}
+                    {{ form.key.label }}<br>
+                    {{ form.key(class="form-control") }}<br>
+                    {% for error in form.key.errors %}
                         <div class="alert alert-danger" role="alert">
                             {{ error }}
                         </div>
                     {% endfor %}
                 </p>
-                <p style="width: 25%">
-                    {{ form.num_questions.label }}<br>
-                    {{ form.num_questions(class="form-control") }}<br>
-                    {% for error in form.num_questions.errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ error }}
-                        </div>
-                    {% endfor %}
-                </p>
-                <p>{{ form.is_private() }} {{ form.is_private.label }}</p>
                 <p>{{ form.create(type="submit", class="btn btn-primary") }}</p>
-                <div>{{ message }}</div>
             </form>
         {% endblock %}
     </body>
