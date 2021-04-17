@@ -12,7 +12,9 @@ class User(SqlAlchemyBase, UserMixin):
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modifed_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
-
+    plus_ruls = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    admin = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    points = sqlalchemy.Column(sqlalchemy.Integer, default=0)
 
     def __repr__(self):
             return "<User> " + str(self.name) + " " + str(self.modifed_date)
