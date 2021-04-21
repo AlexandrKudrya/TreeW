@@ -15,6 +15,7 @@ class Question(SqlAlchemyBase):
     answer = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     is_private = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     create_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+    path_to_file = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     user = orm.relation('User')
 
     def __repr__(self):

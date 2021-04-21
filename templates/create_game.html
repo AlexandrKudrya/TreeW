@@ -29,10 +29,19 @@
                         </div>
                     {% endfor %}
                 </p>
-                <p style="width: 25%">
+                <p style="width: 25%" onchange="reshape()">
                     {{ form.num_questions.label }}<br>
-                    {{ form.num_questions(class="form-control") }}<br>
+                    {{ form.num_questions(type='number', class="form-control", min=1, max=9999) }}<br>
                     {% for error in form.num_questions.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </p>
+                <p style="width: 25%">
+                    {{ form.by_id_form.label }}<br>
+                    {{ form.by_id_form(class="form-control") }}<br>
+                    {% for error in form.by_id_form.errors %}
                         <div class="alert alert-danger" role="alert">
                             {{ error }}
                         </div>
@@ -43,5 +52,35 @@
                 <div>{{ message }}</div>
             </form>
         {% endblock %}
+        <script>
+            function shuffle(array) {
+                var i = array.length,
+                    j = 0,
+                    temp;
+
+                while (i--) {
+
+                    j = Math.floor(Math.random() * (i+1));
+
+                    // swap randomly chosen element with current element
+                    temp = array[i];
+                    array[i] = array[j];
+                    array[j] = temp;
+
+                }
+                return array;
+            }
+            function reshape() {
+                var x = []
+                for(var i = 0; i < {{ max_arr }}; i++){
+                    x.push((i + 1).toString())
+                }
+                x = shuffle(x).slice(0, document.getElementById('num_questions').value)
+                x = x.join(';')
+                document.getElementById('by_id_form').value = x;
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js" integrity="sha384-SR1sx49pcuLnqZUnnPwx6FCym0wLsk5JZuNx2bPPENzswTNFaQU1RDvt3wT4gWFG" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js" integrity="sha384-j0CNLUeiqtyaRmlzUHCPZ+Gy5fQu0dQ6eZ/xAww941Ai1SxSY+0EQqNXNE6DZiVc" crossorigin="anonymous"></script>
     </body>
 </html>

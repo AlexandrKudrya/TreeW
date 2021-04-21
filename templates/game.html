@@ -18,7 +18,7 @@
         {% endif %}
         <div id="countdown"></div>
         <script>
-            var timeleft = 10;
+            var timeleft = 60;
             var downloadTimer = setInterval(function(){
             if(timeleft <= 0){
                 clearInterval(downloadTimer);
@@ -51,6 +51,7 @@
                         </div>
                     {% endfor %}
                 </p>
+                <img src="{{ qust.path_fo_image }}" alt="">
                 <p>{{ form.create(type="submit", class="btn btn-primary") }}</p>
             </form>
         {% endblock %}

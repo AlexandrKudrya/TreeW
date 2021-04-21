@@ -4,7 +4,9 @@ import flask.views
 from flask import Flask, render_template, redirect, make_response, request, sessions, url_for
 from flask_login import login_user, current_user, LoginManager
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, BooleanField, SubmitField, StringField, IntegerField, FieldList, FormField
+from flask_wtf.file import FileRequired, FileAllowed
+from werkzeug.utils import secure_filename
+from wtforms import PasswordField, BooleanField, SubmitField, StringField, IntegerField, FieldList, FormField, FileField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
 import datetime
@@ -28,7 +30,15 @@ def load_user(user_id):
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    return render_template("base.html", title="Главная Страница")
+    arr_of_opened_games = list(db_sess.query(game.Game).all())
+    random.shuffle(arr_of_opened_games)
+
+    raiting = list(db_sess.query(users.User).order_by(users.User.points))[::-1]
+    raiting = raiting[:max(10, len(raiting) - 1)]
+
+    return render_template("base.html", title="Главная Страница",
+                                        arr_of_opened_games=arr_of_opened_games[:max(10, len(arr_of_opened_games) - 1)],
+                                        raiting=raiting)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -80,6 +90,13 @@ def create_question():
         nquestion.question = form.question.data
         nquestion.answer = form.answer.data
 
+        photo = form.image.data
+        print(photo)
+        filename = 'images_of_questions/' + str(len(db_sess.query(question.Question).all()))\
+                   + '.' + photo.filename.split('.')[-1]
+        photo.save('templates/' + filename)
+
+        nquestion.path_to_file = filename
         db_sess.add(nquestion)
 
         db_sess.commit()
@@ -91,15 +108,16 @@ def create_question():
 def create_game():
     form = GameForm()
     print(form.validate_on_submit())
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
+    db_sess = db_session.create_session()
+    max_arr = len(db_sess.query(question.Question).all())
+    if request.method == 'POST':
         ngame = game.Game()
         ngame.admin = current_user.id
         ngame.title = form.title.data
         arr = [str(i) for i in range(1, len(db_sess.query(question.Question).all()) + 1)]
         random.shuffle(arr)
-        ngame.questions_id = ";".join(arr[:int(form.num_questions.data)])
-        ngame.key = ''.join(str(random.randint(1, 150)) for i in range(10))
+        ngame.questions_id = form.by_id_form.data
+        ngame.key = str(len(db_sess.query(game.Game).all()) + 1)
         db_sess.add(ngame)
         game_data = {'data': {}, 'points': {}}
         with open(f'game_logs/{ngame.key}.json', 'w') as cat_file:
@@ -113,7 +131,7 @@ def create_game():
         res.set_cookie("score", '0',
                        max_age=60 * 60 * 24)
         return res
-    return render_template('create_game.html', title='Создание комнаты', form=form)
+    return render_template('create_game.html', title='Создание комнаты', form=form, max_arr=max_arr)
 
 
 
@@ -136,6 +154,7 @@ def choice_game():
 def newgame():
     form = AnswerForm()
     key = str(request.cookies.get("game_key", ''))
+    print(key)
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         current_game = db_sess.query(game.Game).filter(game.Game.key == key).first()
@@ -169,7 +188,7 @@ def newgame():
         try:
             qust_id = int(current_game.questions_id.split(';')[pos])
             qust = db_sess.query(question.Question).filter(question.Question.id == qust_id).first()
-            print(qust)
+            print(qust.path_to_file)
             res = make_response(render_template('game.html', title='Создание комнаты', qust=qust, form=form))
             return res
         except IndexError:
@@ -253,12 +272,14 @@ class QuestionForm(FlaskForm):
     question = StringField('Вопрос', validators=[DataRequired()])
     answer = StringField('Ответ', validators=[DataRequired()])
     is_private = BooleanField('Приватный?')
+    image = FileField()
     create = SubmitField('Создать')
 
 
 class GameForm(FlaskForm):
     title = StringField('Тема', validators=[DataRequired()])
     num_questions = IntegerField('Количество Вопросов', validators=[DataRequired()])
+    by_id_form = StringField('Впишите сюда номера вопросов через ";"', validators=[DataRequired()])
     is_private = BooleanField('Приватный?')
     create = SubmitField('Создать')
 

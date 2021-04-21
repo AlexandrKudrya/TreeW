@@ -52,6 +52,48 @@
               </div>
             </div>
           </nav>
+        <h1>Топ 10 игроков</h1>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Имя Пользователя</th>
+              <th scope="col">Количество очков</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in raiting %}
+                <tr>
+                  <th scope="row">{{ user.name }}</th>
+                  <td>{{ user.points }}</td>
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <h1>ткрытые игры</h1>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">№</th>
+              <th scope="col">Название</th>
+                <th scope="col">Перейдти</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for game in arr_of_opened_games %}
+                <tr>
+                  <th scope="row">{{ game.id }}</th>
+                  <td>{{ game.title }}</td>
+                    <td><button onclick="redirectGame({{ game.key }})">Войдти в игру</button></td>
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <script>
+            function redirectGame(key) {
+                document.cookie = "game_key=" + key;
+                document.location.href = 'http://127.0.0.1:8080/newgame';
+            }
+        </script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js" integrity="sha384-SR1sx49pcuLnqZUnnPwx6FCym0wLsk5JZuNx2bPPENzswTNFaQU1RDvt3wT4gWFG" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js" integrity="sha384-j0CNLUeiqtyaRmlzUHCPZ+Gy5fQu0dQ6eZ/xAww941Ai1SxSY+0EQqNXNE6DZiVc" crossorigin="anonymous"></script>
     </body>
