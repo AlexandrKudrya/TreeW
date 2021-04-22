@@ -92,9 +92,9 @@ def create_question():
 
         photo = form.image.data
         print(photo)
-        filename = 'images_of_questions/' + str(len(db_sess.query(question.Question).all()))\
+        filename = 'static/img/questions/' + str(len(db_sess.query(question.Question).all()))\
                    + '.' + photo.filename.split('.')[-1]
-        photo.save('templates/' + filename)
+        photo.save(filename)
 
         nquestion.path_to_file = filename
         db_sess.add(nquestion)
@@ -159,7 +159,12 @@ def newgame():
         db_sess = db_session.create_session()
         current_game = db_sess.query(game.Game).filter(game.Game.key == key).first()
         print(current_game.questions_id)
-        pos = int(request.cookies.get("pos", 0))
+        try:
+            pos = int(request.cookies.get("pos", 0))
+        except ValueError:
+            res = make_response(redirect('/newgame'))
+            res.set_cookie('pos', '0', max_age=0)
+            return res
         try:
             qust_id = current_game.questions_id.split(';')[pos]
             qust = db_sess.query(question.Question).filter(question.Question.id == qust_id).first()
@@ -184,7 +189,12 @@ def newgame():
     elif len(key) > 0:
         db_sess = db_session.create_session()
         current_game = db_sess.query(game.Game).filter(game.Game.key == key).first()
-        pos = int(request.cookies.get("pos", 0))
+        try:
+            pos = int(request.cookies.get("pos", 0))
+        except ValueError:
+            res = make_response(redirect('/newgame'))
+            res.set_cookie('pos', '0', max_age=0)
+            return res
         try:
             qust_id = int(current_game.questions_id.split(';')[pos])
             qust = db_sess.query(question.Question).filter(question.Question.id == qust_id).first()
