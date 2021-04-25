@@ -1,11 +1,8 @@
 import random
 
-import flask.views
 from flask import Flask, render_template, redirect, make_response, request, sessions, url_for
 from flask_login import login_user, current_user, LoginManager
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileRequired, FileAllowed
-from werkzeug.utils import secure_filename
 from wtforms import PasswordField, BooleanField, SubmitField, StringField, IntegerField, FieldList, FormField, FileField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
@@ -37,8 +34,8 @@ def index():
     raiting = raiting[:max(10, len(raiting) - 1)]
 
     return render_template("base.html", title="Главная Страница",
-                                        arr_of_opened_games=arr_of_opened_games[:max(10, len(arr_of_opened_games) - 1)],
-                                        raiting=raiting)
+                           arr_of_opened_games=arr_of_opened_games[:max(10, len(arr_of_opened_games) - 1)],
+                           raiting=raiting)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -92,7 +89,7 @@ def create_question():
 
         photo = form.image.data
         print(photo)
-        filename = 'static/img/questions/' + str(len(db_sess.query(question.Question).all()))\
+        filename = 'static/img/questions/' + str(len(db_sess.query(question.Question).all())) \
                    + '.' + photo.filename.split('.')[-1]
         photo.save(filename)
 
@@ -134,7 +131,6 @@ def create_game():
     return render_template('create_game.html', title='Создание комнаты', form=form, max_arr=max_arr)
 
 
-
 @app.route('/choice_game', methods=['GET', 'POST'])
 def choice_game():
     form = ChoiceForm()
@@ -145,7 +141,7 @@ def choice_game():
             res = make_response(redirect('/newgame'))
             res.set_cookie("pos", str(1),
                            max_age=60 * 60 * 24)
-            res.set_cookie('game_key', form.key.data, max_age=60*60*24)
+            res.set_cookie('game_key', form.key.data, max_age=60 * 60 * 24)
             return res
     return render_template('choice_game.html', title='Создание комнаты', form=form)
 
@@ -175,7 +171,9 @@ def newgame():
                 res.set_cookie('score', str(int(request.cookies.get("score", 0)) + 1), max_age=60 * 60 * 24)
             with open(f'game_logs/{current_game.key}.json', 'r') as cat_file:
                 data = json.load(cat_file)
-            data['data'][str(current_user.id)] = data['data'].get(str(current_user.id), []) + [[qust.answer, form.answer.data, qust.question]]
+            data['data'][str(current_user.id)] = data['data'].get(str(current_user.id), []) + [
+                [qust.answer, form.answer.data, qust.question]]
+            # Тест, что вообще такое есть
             try:
                 k = data['points'][str(current_user.id)]
             except KeyError:
@@ -225,8 +223,8 @@ def check_my_game(gameid):
         data = json.load(cat_file)
     arr_of_answ = data['data']
     arr_of_normal_answers = [
-        db_sess.query(question.Question).filter(question.Question.id == id).first().answer
-        for id in cgame.questions_id.split(';')
+        db_sess.query(question.Question).filter(question.Question.id == qust_id).first().answer
+        for qust_id in cgame.questions_id.split(';')
     ]
     product = namedtuple('Product', ['yes'])
 
@@ -249,18 +247,13 @@ def check_my_game(gameid):
         with open(f'game_logs/{cgame.key}.json', 'w') as cat_file:
             json.dump(data, cat_file, ensure_ascii=False)
         return render_template('check_my_game.html', arr_of_answ=arr_of_answ,
-                                   arr_of_normal_answers=arr_of_normal_answers,
-                                   users_id=arr_of_answ.keys(),
-                                   form=form)
+                               arr_of_normal_answers=arr_of_normal_answers,
+                               users_id=arr_of_answ.keys(),
+                               form=form)
     return render_template('check_my_game.html', arr_of_answ=arr_of_answ,
-                                                 arr_of_normal_answers=arr_of_normal_answers,
-                                                 users_id=arr_of_answ.keys(),
-                                                 form=form)
-
-
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    return 'я сделаль, потом доделаю'
+                           arr_of_normal_answers=arr_of_normal_answers,
+                           users_id=arr_of_answ.keys(),
+                           form=form)
 
 
 class LoginForm(FlaskForm):

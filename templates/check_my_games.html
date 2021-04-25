@@ -38,11 +38,6 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="/check_my_games">Проверка Игр</a>
                             </li>
-                        {% if current_user.admin %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="/admin">Админская Панель</a>
-                            </li>
-                        {% endif %}
                       {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="/login">Авторизация</a>
