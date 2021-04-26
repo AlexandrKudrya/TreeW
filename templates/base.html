@@ -18,7 +18,7 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                   {% if current_user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/loguot">{{ current_user.name }}</a>
+                        <a class="nav-link active" aria-current="page" href="/logout">{{ current_user.name }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/points">Очки: {{ current_user.points }}</a>
@@ -35,7 +35,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/check_my_games">Проверка Игр</a>
                         </li>
-                    {% endif %}
                   {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="/login">Авторизация</a>

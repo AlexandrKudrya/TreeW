@@ -39,7 +39,6 @@
                     {% endfor %}
                 </p>
                 <p style="width: 25%">
-                    {{ form.image.label }}<br>
                     {{ form.image(class="form-control") }}<br>
                     {% for error in form.image.errors %}
                         <div class="alert alert-danger" role="alert">
@@ -51,6 +50,11 @@
                 <p>{{ form.create(type="submit", class="btn btn-primary") }}</p>
                 <div>{{ message }}</div>
             </form>
+        {% if erore != '' %}
+            <div class="alert alert-danger">
+                              {{ erore }}
+                </div>
+        {% endif %}
         {% endblock %}
     </body>
 </html>

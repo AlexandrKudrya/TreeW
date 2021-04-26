@@ -1,22 +1,32 @@
+import datetime
+import json
 import random
+from collections import namedtuple
 
-from flask import Flask, render_template, redirect, make_response, request, sessions, url_for
-from flask_login import login_user, current_user, LoginManager
+from flask import Flask, render_template, redirect, make_response, request
+from flask_login import login_user, current_user, LoginManager, login_required, logout_user
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed
 from wtforms import PasswordField, BooleanField, SubmitField, StringField, IntegerField, FieldList, FormField, FileField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired
-import datetime
+from PIL import Image
+from tinytag import TinyTag
+
 from data import db_session
 from data import users, question, game
-import json
-from collections import namedtuple
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 db_session.global_init("db/3W.sqlite")
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+def get_content_len(filename):
+    tag = TinyTag.get(filename)
+    return int(tag.duration)
 
 
 @login_manager.user_loader
@@ -88,17 +98,55 @@ def create_question():
         nquestion.answer = form.answer.data
 
         photo = form.image.data
-        print(photo)
-        filename = 'static/img/questions/' + str(len(db_sess.query(question.Question).all())) \
-                   + '.' + photo.filename.split('.')[-1]
-        photo.save(filename)
+        if photo.filename.split('.')[-1] in ['jpg', 'png']:
+            print(photo)
+            filename = 'static/img/questions/' + str(len(db_sess.query(question.Question).all())) \
+                       + '.' + photo.filename.split('.')[-1]
+            photo.save(filename)
+            image = Image.open(filename)
+            new_image = image.resize((600, 600))
+            new_image.save(filename)
 
-        nquestion.path_to_file = filename
-        db_sess.add(nquestion)
+            nquestion.path_to_file = filename
+            nquestion.content_type = 'image'
+            nquestion.content_len = 0
+            db_sess.add(nquestion)
 
-        db_sess.commit()
-        return redirect("/")
-    return render_template('create_question.html', title='Регистрация', form=form)
+            db_sess.commit()
+            return redirect("/")
+        elif photo.filename.split('.')[-1] in ['mp4']:
+            print(photo)
+            filename = 'static/img/questions/' + str(len(db_sess.query(question.Question).all())) \
+                       + '.' + photo.filename.split('.')[-1]
+            photo.save(filename)
+
+            nquestion.path_to_file = filename
+            nquestion.content_type = 'mp4'
+            nquestion.content_len = get_content_len(filename)
+            db_sess.add(nquestion)
+
+            db_sess.commit()
+            return redirect("/")
+        elif photo.filename.split('.')[-1] in ['mp3']:
+            print(photo)
+            filename = 'static/img/questions/' + str(len(db_sess.query(question.Question).all())) \
+                       + '.' + photo.filename.split('.')[-1]
+            photo.save(filename)
+
+            nquestion.path_to_file = filename
+            nquestion.content_type = 'mp3'
+            nquestion.content_len = get_content_len(filename)
+            db_sess.add(nquestion)
+
+            db_sess.commit()
+            return redirect("/")
+        elif not(photo):
+            db_sess.commit()
+            return redirect("/")
+        return render_template('create_question.html', title='Регистрация', form=form, erore='Поддерживаются только '
+                                                                                             'файлы .jpg, .png, .mp3, '
+                                                                                             '.mp4')
+    return render_template('create_question.html', title='Регистрация', form=form, erore='')
 
 
 @app.route('/create_game', methods=['GET', 'POST'])
@@ -256,6 +304,13 @@ def check_my_game(gameid):
                            form=form)
 
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
+
+
 class LoginForm(FlaskForm):
     email = EmailField('Почта', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
@@ -275,7 +330,7 @@ class QuestionForm(FlaskForm):
     question = StringField('Вопрос', validators=[DataRequired()])
     answer = StringField('Ответ', validators=[DataRequired()])
     is_private = BooleanField('Приватный?')
-    image = FileField()
+    image = FileField(FileAllowed(['jpg', 'png'], 'Images only!'))
     create = SubmitField('Создать')
 
 

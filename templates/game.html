@@ -60,7 +60,7 @@
               </div>
             </div>
             <script>
-                var timeleft = 60;
+                var timeleft = 60 + {{ qust.content_len }};
                 var downloadTimer = setInterval(function(){
                 if(timeleft <= 0){
                     clearInterval(downloadTimer);
@@ -69,7 +69,7 @@
                     document.cookie = "pos=" + pos.toString();
                     document.location.reload();
                 } else {
-                    document.getElementById("progress_bar").style.width = timeleft / 60 * 100 + "%";
+                    document.getElementById("progress_bar").style.width = timeleft / (60 + {{ qust.content_len }}) * 100 + "%";
                 }
                 timeleft -= 1;
                 }, 1000);
@@ -107,7 +107,19 @@
                             {% endfor %}
                         </p>
                     </div>
-                    <img src="{{ qust.path_to_file }}" alt="">
+                    {% if qust.content_type == 'image' %}
+                        <img src="{{ qust.path_to_file }}" alt="">
+                    {% elif qust.content_type == 'mp4' %}
+                        <video width="320" height="240" controls>
+                          <source src="{{ qust.path_to_file }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                        </video>
+                    {% elif qust.content_type == 'mp3' %}
+                        <audio width="320" height="240" controls>
+                          <source src="{{ qust.path_to_file }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                        </audio>
+                    {% endif %}
                     <div class="text-center">
                         <p>
                             {{ form.create(type="submit", class="btn btn-primary") }}
