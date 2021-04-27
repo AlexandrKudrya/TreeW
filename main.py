@@ -284,7 +284,7 @@ def check_my_game(gameid):
         ]
     }
     form = SaveForm(data=fdata)
-    if str(request).split()[-1][:-1] == '[POST]':
+    if request.method == 'POST':
         for i in range(len(list(arr_of_answ.keys()))):
             user = db_sess.query(users.User).filter(users.User.id == int(list(arr_of_answ.keys())[i])).first()
             print(user)
@@ -302,6 +302,26 @@ def check_my_game(gameid):
                            arr_of_normal_answers=arr_of_normal_answers,
                            users_id=arr_of_answ.keys(),
                            form=form)
+
+
+@app.route('/points', methods=['GET', 'POST'])
+def points():
+    form = BuyForm()
+    if request.method == 'POST':
+        db_sess = db_session.create_session()
+        user = db_sess.query(users.User).filter(users.User.id == current_user.id).first()
+        print(current_user.points)
+        user.points -= 1000
+        print(current_user.points)
+        user.plus_ruls = True
+        db_sess.commit()
+        print(current_user.points)
+        return redirect('/')
+    elif current_user.points < 1000 and not(current_user.plus_ruls):
+        return render_template('points_false.html', title='Создание комнаты', msg='Возвращайся, когда у тебя будет больше 1000 очков')
+    elif current_user.plus_ruls:
+        return render_template('points_false.html', title='Создание комнаты', msg='Ты уже купил дополнительные права')
+    return render_template('points_true.html', title='Создание комнаты', form=form)
 
 
 @app.route('/logout')
@@ -359,6 +379,10 @@ class Cheking_Form(FlaskForm):
 class SaveForm(FlaskForm):
     products = FieldList(FormField(Cheking_Form), min_entries=1, max_entries=9999)
     save = SubmitField('Сохранить')
+
+
+class BuyForm(FlaskForm):
+    buy = SubmitField('Купить дополнительные права')
 
 
 if __name__ == '__main__':

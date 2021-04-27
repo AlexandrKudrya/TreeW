@@ -1,17 +1,14 @@
 {% extends "main.html" %}
-
 {% block content %}
-<div class="text-center" style="color:gold">
-    <p>Ключ вашей игры: {{ key }}</p>
-    <p>
-        <a class="btn btn-primary " href="/newgame" style="text-align:center;
+    <form action="" method="post" enctype="multipart/form-data">
+        {{ form.buy(type="submit", class="btn btn-primary", style="""text-align:center;
                                                                       border: 2px solid gold;
                                                                       width: 50%;
+                                                                      margin-top: 25%;
                                                                       margin-right: 25%;
                                                                       margin-left: 25%;
                                                                       background: transparent;
                                                                       color: gold;
-                                                                      outline:none;">Старт Очереди</a>
-    </p>
-</div>
+                                                                      outline:none;""") }}
+    </form>
 {% endblock %}
